@@ -1,6 +1,5 @@
 """Generate markov text from text files."""
 import sys
-input_file = sys.argv[1]
 
 from random import choice
 
@@ -11,8 +10,6 @@ def open_and_read_file(file_path):
     Takes a string that is a file path, opens the file, and turns
     the file's contents as one string of text.
     """
-
-    # your code goes here
     text = ""
     full_text = open(file_path)
 
@@ -45,11 +42,6 @@ def make_chains(text_string, n_gram):
         >>> chains[('hi', 'there')]
         ['mary', 'juanita']
     """
-    # n_gram = int(raw_input("Enter number of words for your n-gram: "))
-    # while n_gram < 0 or n_gram > 10:
-    #     print "Not a valid number. Choose a number between 1 - 10"
-    #     n_gram = int(raw_input("Enter number of words for your n-gram: "))
-
     # dictionary of our bigrams
     chains = {}
 
@@ -60,7 +52,6 @@ def make_chains(text_string, n_gram):
 
     # looping until we get to the third to last words in text
     while i < len(word_list) - n_gram:
-        # key = (word_list[i], word_list[i+1])
         # Adding n words to the key to make an n-gram
         j = 0
         key_list = []
@@ -74,10 +65,12 @@ def make_chains(text_string, n_gram):
 
     # checking if key is in chains and appending key if not
     # look into set default method
-        if key not in chains: 
-            chains[key] = [value]
-        else:
-            chains[key].append(value)
+        chains.setdefault(key, []).append(value)
+
+        # if key not in chains:
+        #     chains[key] = [value]
+        # else:
+        #     chains[key].append(value)
         i += 1
 
     return chains
@@ -93,7 +86,7 @@ def make_text(chains, n_gram):
     first_key = choice(chains.keys())
     first_letter = first_key[0][0]
 
-        # Look for a tuple with the first word that is capitalized
+    # Look for a tuple with the first word that is capitalized
     while not first_letter.isupper():
         first_key = choice(chains.keys())
         first_letter = first_key[0][0]
@@ -111,44 +104,63 @@ def make_text(chains, n_gram):
     words.append(choice(values))
 
     # creating a new key from the last n words of the text string
-
     new_key_list = []
     new_key_list = words[-n_gram:]
     new_key = tuple(new_key_list)
 
     # Checking for punctuation mark in key
-    has_punc = new_key[n_gram-1][-1] == "?"
+    # has_punc = new_key[n_gram-1][-1] in ["?", ".", "!"]
+    tweet_length = len(" ".join(words))
 
     # adding new words until no new key in chains dictionary
-    while new_key in chains and not has_punc:
+    while new_key in chains and tweet_length <= 140:
 
         values = chains[new_key]
-        words.append(choice(values))
+        new_word = choice(values)
 
-        new_key_list = words[-n_gram:]
-        new_key = tuple(new_key_list)
+        if tweet_length + len(new_word) + 1 <= 140:
+        # Where we add to our markov text generator
+            words.append(new_word)
 
-        has_punc = new_key[n_gram-1][-1] == "?"
+            new_key_list = words[-n_gram:]
+            new_key = tuple(new_key_list)
+
+            # has_punc = new_key[n_gram-1][-1] in ["?", ".", "!"]
+            tweet_length = len(" ".join(words))
+        else:
+            break
 
     return " ".join(words)
 
 
-n_gram = int(raw_input("Enter number of words for your n-gram: "))
-while n_gram < 0 or n_gram > 10:
-    print "Not a valid number. Choose a number between 1 - 10"
+def user_input():
+    """User chooses length of n-gram"""
     n_gram = int(raw_input("Enter number of words for your n-gram: "))
+    while n_gram < 0 or n_gram > 10:
+        print "Not a valid number. Choose a number between 1 - 10"
+        n_gram = int(raw_input("Enter number of words for your n-gram: "))
+
+    return n_gram
 
 
-input_path = input_file
+def play_markov():
+    """Creates string using markov algorithm"""
+    n_gram = user_input()
+    input_file_1 = sys.argv[1]
+    input_file_2 = sys.argv[2]
+    input_path_1 = input_file_1
+    input_path_2 = input_file_2
 
-# Open the file and turn it into one long string
-input_text = open_and_read_file(input_path)
+    # Open the file and turn it into one long string
+    input_text = open_and_read_file(input_path_1) + " " + open_and_read_file(input_path_2)
 
-# Get a Markov chain
-chains = make_chains(input_text, n_gram)
+    # Get a Markov chain
+    chains = make_chains(input_text, n_gram)
 
-# Produce random text
-random_text = ""
-random_text = make_text(chains, n_gram)
+    # Produce random text
+    random_text = ""
+    random_text = make_text(chains, n_gram)
 
-print random_text
+    print random_text
+
+play_markov()
