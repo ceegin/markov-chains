@@ -109,11 +109,11 @@ def make_text(chains, n_gram):
     new_key = tuple(new_key_list)
 
     # Checking for punctuation mark in key
-    # has_punc = new_key[n_gram-1][-1] in ["?", ".", "!"]
+    has_punc = new_key[n_gram-1][-1] in ["?", ".", "!"]
     tweet_length = len(" ".join(words))
 
     # adding new words until no new key in chains dictionary
-    while new_key in chains and tweet_length <= 140:
+    while new_key in chains and tweet_length <= 140 and not has_punc:
 
         values = chains[new_key]
         new_word = choice(values)
@@ -125,7 +125,7 @@ def make_text(chains, n_gram):
             new_key_list = words[-n_gram:]
             new_key = tuple(new_key_list)
 
-            # has_punc = new_key[n_gram-1][-1] in ["?", ".", "!"]
+            has_punc = new_key[n_gram-1][-1] in ["?", ".", "!"]
             tweet_length = len(" ".join(words))
         else:
             break
